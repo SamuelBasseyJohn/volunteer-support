@@ -1,4 +1,3 @@
-import { PrismaAdapter } from "@auth/prisma-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import * as bcrypt from "bcrypt";
 import CredentialsProvider from "next-auth/providers/credentials"
@@ -23,7 +22,7 @@ declare module "next-auth" {
   interface User extends AdapterUser {
     // ...other properties
     role?: string;
-    emailVerified: Date| null
+    emailVerified: Date | null
   }
 }
 
@@ -46,22 +45,22 @@ export const authConfig = {
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: {label: "email", type: "email", placeholder: "johndoe@email.com"},
-        password: {label: "password", type: "password"}
+        email: { label: "email", type: "email", placeholder: "johndoe@email.com" },
+        password: { label: "password", type: "password" }
       },
-      async authorize(credentials){
-        if (!credentials.email || !credentials.password){
+      async authorize(credentials) {
+        if (!credentials.email || !credentials.password) {
           throw new Error("Email and Password required")
         }
         const email = credentials.email as string
         const password = credentials.password as string
         try {
           const myuser = await db.user.findUniqueOrThrow({
-            where: {email}
+            where: { email }
           })
           const validPassword = await bcrypt.compare(password, myuser.password)
           // const validPassword = password == myuser.password
-          if (validPassword){
+          if (validPassword) {
             console.log("Login Successful")
             return {
               id: myuser.id,
@@ -78,7 +77,6 @@ export const authConfig = {
       }
     })
   ],
-  adapter: PrismaAdapter(db),
   // callbacks: {
   //   session: ({ session, user }) => ({
   //     ...session,
@@ -88,10 +86,10 @@ export const authConfig = {
   //     },
   //   }),
   // },
-  session: {strategy: "jwt"},
+  session: { strategy: "jwt" },
   callbacks: {
-    async jwt({token, user}) {
-      if (user){
+    async jwt({ token, user }) {
+      if (user) {
         token.email = user.email
         token.sub = user.id
         token.name = user.name
@@ -99,7 +97,7 @@ export const authConfig = {
       }
       return token
     },
-    async session({session, token}){
+    async session({ session, token }) {
       session.user.id = token.sub ?? ""
       session.userId = token.sub ?? ""
       session.user.name = token.name ?? ""

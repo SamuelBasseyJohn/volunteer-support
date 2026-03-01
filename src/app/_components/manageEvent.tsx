@@ -1,172 +1,122 @@
-"use client";
+"use client"
 
-import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
-import { api } from "~/trpc/react";
-import { useMemo } from "react";
-import { Status } from "@prisma/client";
+import { useRouter } from "next/navigation"
+import { ArrowLeft } from "lucide-react"
+import { api } from "~/trpc/react"
+import { useMemo } from "react"
+import { Status } from "@prisma/client"
 
-const EventManagement = ({id} : {id: string}) => {
-    const router = useRouter();
-    
-    const {data:event, isLoading, isFetched} = api.event.getEvent.useQuery(
-      {
-        id
-      },
-      // { enabled: !!id }
-    )
+const EventManagement = ({ id }: { id: string }) => {
+    const router = useRouter()
+
+    const { data: event, isLoading, isFetched, refetch } = api.event.getEvent.useQuery({ id })
+
     const accept = api.event.acceptApplication.useMutation({
-        onSuccess: res => {
-            const id = res.application.id
-            const status = res.application.status
-            if (event){
-                event.signups = event.signups.map(signup => {
-                    if (signup.id == id){
-                        signup.status = status
-                    }
-                    return signup
-                })
-            }
-        },
-        onError: err => {
-            alert(err.message)
-        }
+        onSuccess: () => void refetch(),
+        onError: err => alert(err.message)
     })
     const reject = api.event.rejectApplication.useMutation({
-        onSuccess: res => {
-            const id = res.application.id
-            const status = res.application.status
-            if (event){
-                event.signups = event.signups.map(signup => {
-                    if (signup.id == id){
-                        signup.status = status
-                    }
-                    return signup
-                })
-            }
-        },
-        onError: err => {
-            alert(err.message)
-        }
+        onSuccess: () => void refetch(),
+        onError: err => alert(err.message)
     })
-    
-    const memoizedAccepted = useMemo(() => {
-        if (event){
-            return event.signups.filter(signup => signup.status == Status.CONFIRMED).length
-        }
-        else {
-            return 0;
-        }
-    }, [event])
-    // useEffect(() => {
-    //   if (event) {
-    //     setVolunteers(event.signups || []);
-    //   }
-    // }, [event]);
-  
-    const handleAccept = (id: string) => {
-    //   setVolunteers(volunteers.filter((volunteer) => volunteer.id !== id));
-        accept.mutate({applicationId: id})
-    };
-  
-    const handleReject = (id: string) => {
-    //   setVolunteers(volunteers.filter((volunteer) => volunteer.id !== id));
-        reject.mutate({applicationId: id})
-    };
-  
-    const handleDeleteEvent = () => {
-      router.push("/events");
-    };
-    // bg-gradient-to-b from-blue-800 to-blue-400
+    const confirmAttendance = api.event.confirmAttendance.useMutation({
+        onSuccess: () => void refetch(),
+        onError: err => alert(err.message)
+    })
+
+    const confirmed = useMemo(() =>
+        event ? event.signups.filter(s => s.status === Status.CONFIRMED).length : 0,
+        [event]
+    )
+
     return (
-      <div className="flex-1 space-y-6 rounded-lg bg-gradient-to-b from-blue-800 to-blue-400 text-white  p-6 shadow-lg">
-        {
-          isFetched &&
-          <div>
-            <div className="flex items-center justify-between">
-                <div className="flex justify-center gap-3 text-center">
-                <button
-                    onClick={() => router.back()}
-                    className="flex items-center rounded-full bg-white p-2 shadow-md hover:shadow-lg"
-                >
-                    <ArrowLeft className="h-6 w-6 text-gray-800" />
-                </button>
-    
-                <h1 className="text-2xl font-bold text-gray-900">Manage Event</h1>
+        <div className="flex-1 space-y-6 rounded-lg bg-gradient-to-b from-blue-800 to-blue-400 text-white p-6 shadow-lg min-h-screen">
+            {isFetched && (
+                <div>
+                    <div className="flex items-center justify-between">
+                        <div className="flex justify-center gap-3 text-center">
+                            <button onClick={() => router.back()}
+                                className="flex items-center rounded-full bg-white p-2 shadow-md hover:shadow-lg">
+                                <ArrowLeft className="h-6 w-6 text-gray-800" />
+                            </button>
+                            <h1 className="text-2xl font-bold text-gray-900">Manage Event</h1>
+                        </div>
+                    </div>
+
+                    <div className="max-w-4xl mx-auto mt-4">
+                        <h2 className="my-3 text-center text-3xl font-extrabold text-gray-800">{event?.title}</h2>
+                        <div className="flex flex-wrap gap-4 justify-center my-2 text-gray-700 text-lg">
+                            <span><strong>Accepted:</strong> {confirmed}/{event?.max_participants}</span>
+                            {event?.location && <span>📍 {event.location}</span>}
+                            {event?.category && <span>🏷 {event.category}</span>}
+                        </div>
+                        {event?.description && (
+                            <p className="text-center text-gray-800 my-2">{event.description}</p>
+                        )}
+                    </div>
+
+                    <div className="max-w-4xl mx-auto mt-6">
+                        <h3 className="my-3 text-xl text-center font-bold text-gray-900">Volunteer Applications</h3>
+                        {event?.signups.length === 0 ? (
+                            <p className="text-center text-blue-100">No applications yet.</p>
+                        ) : (
+                            <ul className="space-y-3">
+                                {event?.signups.map(signup => (
+                                    <li key={signup.id} className="flex flex-col gap-3 rounded-xl bg-white/20 p-4 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between">
+                                        <div>
+                                            <span className="font-semibold text-white">{signup.user.name}</span>
+                                            <span className="ml-2 text-sm text-blue-100">{signup.user.email}</span>
+                                            {signup.user.skills && signup.user.skills.length > 0 && (
+                                                <div className="mt-1 flex flex-wrap gap-1">
+                                                    {signup.user.skills.map(skill => (
+                                                        <span key={skill} className="rounded-full bg-white/30 px-2 py-0.5 text-xs text-white">
+                                                            {skill}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            {signup.status === Status.PENDING && (
+                                                <>
+                                                    <button onClick={() => accept.mutate({ applicationId: signup.id })}
+                                                        className="rounded-lg bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 transition">
+                                                        Accept
+                                                    </button>
+                                                    <button onClick={() => reject.mutate({ applicationId: signup.id })}
+                                                        className="rounded-lg bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700 transition">
+                                                        Reject
+                                                    </button>
+                                                </>
+                                            )}
+                                            {signup.status !== Status.PENDING && (
+                                                <span className={`rounded-full px-3 py-1 text-sm font-semibold ${signup.status === "CONFIRMED" ? "bg-green-200 text-green-800" : "bg-red-200 text-red-800"
+                                                    }`}>
+                                                    {signup.status}
+                                                </span>
+                                            )}
+                                            {signup.status === Status.CONFIRMED && !signup.attendanceConfirmed && (
+                                                <button onClick={() => confirmAttendance.mutate({ signupId: signup.id })}
+                                                    className="rounded-lg bg-purple-600 px-3 py-1.5 text-sm text-white hover:bg-purple-700 transition">
+                                                    Confirm Attendance
+                                                </button>
+                                            )}
+                                            {signup.attendanceConfirmed && (
+                                                <span className="rounded-full bg-purple-200 px-3 py-1 text-sm font-semibold text-purple-800">
+                                                    ✅ Attended
+                                                </span>
+                                            )}
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
                 </div>
-    
-                {/* <button
-                onClick={handleDeleteEvent}
-                className="rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700"
-                >
-                Delete Event
-                </button> */}
-            </div>
-            <div className="max-w-7xl mx-auto">
-                <h2 className="my-3 text-center text-3xl font-extrabold text-gray-800">{event?.title}</h2>
-                <div className="my-2 text-lg text-gray-700 max-w-7xl mx-auto">
-                    <span className="text-black font-semibold">Applicants:</span> {memoizedAccepted}/{event?.max_participants}
-                </div>
-                <p className="text-lg text-gray-900">
-                    <span className="text-black font-semibold">Location:</span> {event?.location}
-                </p>
-                <div className="flex mt-2 gap-2">
-                    <p className="block text-center text-lg font-semibold">Description:</p>
-                    <p className=" flex-1 text-lg  rounded-md">
-                        {event?.description}
-                    </p>
-                </div>
-            </div>
-            <div className="max-w-7xl mx-auto">
-                <h3 className="my-3 text-xl text-center font-bold text-gray-900">Volunteers</h3>
-                {event?.signups.length === 0 ? (
-                <p className="text-gray-500">No volunteers yet.</p>
-                ) : (
-                <ul className="space-y-3">
-                    {event?.signups.map((volunteer) => (
-                    <li
-                        key={volunteer.id}
-                        className="flex items-center justify-between rounded-md bg-gray-100 p-3"
-                    >
-                        <span className="font-medium text-gray-800">
-                        {volunteer.user.name}
-                        </span>
-                        {
-                            volunteer.status == Status.PENDING ?
-                            <div className="space-x-2">
-                                <button
-                                    onClick={() => handleAccept(volunteer.id)}
-                                    className="rounded-md bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
-                                >
-                                    Accept
-                                </button>
-                                <button
-                                    onClick={() => handleReject(volunteer.id)}
-                                    className="rounded-md bg-red-600 px-3 py-1 text-white hover:bg-red-700"
-                                >
-                                    Reject
-                                </button>
-                            </div> :
-                            <div>
-                                <p 
-                                className={`font-semibold ${volunteer.status == "CONFIRMED" ? "text-green-500" : "text-red-500"}`}>
-                                    {volunteer.status}
-                                </p>
-                            </div>
-                        }
-                    </li>
-                    ))}
-                </ul>
-                )}
-            </div>
-          </div>
-        }
-        {
-            isLoading && 
-            <p className="text-center my-5 text-white text-xl font-semibold">Loading Event...</p>
-        }
-      </div>
-    );
-  };
+            )}
+            {isLoading && <p className="text-center my-5 text-white text-xl font-semibold">Loading Event...</p>}
+        </div>
+    )
+}
 
 export default EventManagement

@@ -1,28 +1,27 @@
 "use server"
 import { signIn } from "~/server/auth";
 import { AuthError } from "next-auth";
-import { TRPCError } from "@trpc/server";
 
 export async function loginAction(
-  prevState: { success?: boolean; error?: string } | null, 
+  prevState: { success?: boolean; error?: string } | null,
   formData: FormData
-){
+) {
   try {
     await signIn("credentials", {
       redirect: false,
       email: formData.get("email") as string,
       password: formData.get("password") as string
-    }) as string
-    console.log("Login successful")
-    return {success: true}
-  } catch(err) {
-    if (err instanceof AuthError){
-      console.log(err.message)
-    } else if (err instanceof TRPCError){
-      return {error: err.message}
-    } else {
-      console.log(err)
+    })
+    return { success: true }
+  } catch (err) {
+    // Re-throw Next.js internals like NEXT_REDIRECT so the framework handles them
+    if (err instanceof Error && err.message.includes("NEXT_REDIRECT")) {
+      throw err;
     }
-    return {error: "Invalid email or password"}
+    if (err instanceof AuthError) {
+      return { error: "Invalid email or password" }
+    }
+    console.error("Login error:", err)
+    return { error: "Something went wrong. Please try again." }
   }
 }

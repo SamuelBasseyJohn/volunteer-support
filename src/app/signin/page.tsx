@@ -8,15 +8,20 @@ import { useSession } from "next-auth/react";
 export default function SignIn() {
   const router = useRouter()
   const [formState, formAction] = useActionState(loginAction, null);
-  const { update } = useSession() 
+  const { data: session, update } = useSession()
 
   useEffect(() => {
-    if (formState?.success){
-      update().then(() => console.log("Updated Successfully")).catch(err => console.error(err));
-      router.push("/")
+    if (formState?.success) {
+      update().then(updated => {
+        const role = updated?.user?.role
+        if (role === "ADMIN") router.push("/admin")
+        else if (role === "ORGANIZATION") router.push("/org")
+        else router.push("/dashboard")
+      }).catch(() => router.push("/dashboard"))
     }
   }, [formState, router])
-  
+
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-800 to-blue-400">
       <form action={formAction} className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg w-full max-w-sm mx-4">

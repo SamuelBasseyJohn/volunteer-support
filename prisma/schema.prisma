@@ -6,13 +6,11 @@ generator client {
 }
 
 datasource db {
-    provider = "postgresql"
-    // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
-    // Further reading:
-    // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
-    // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
-    url      = env("DATABASE_URL")
+    provider  = "postgresql"
+    url       = env("DATABASE_URL")
+    directUrl = env("DIRECT_URL")
 }
+
 model Session {
     id           String   @id @default(cuid())
     sessionToken String   @unique
@@ -27,6 +25,9 @@ model User {
     email         String        @unique
     role          Role
     password      String
+    bio           String?       @db.VarChar(500)
+    phone         String?       @db.VarChar(30)
+    skills        String[]
     signups       Signup[]
     createdAt     DateTime      @default(now())
     sessions      Session[]
@@ -40,8 +41,9 @@ model Opportunity {
     userId           String
     user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
     title            String            @db.VarChar(100)
-    description      String?           @db.VarChar(255)
+    description      String?           @db.VarChar(500)
     location         String?           @db.VarChar(100)
+    category         String?           @db.VarChar(50)
     date             DateTime
     max_participants Int
     status           OpportunityStatus
@@ -52,18 +54,20 @@ model Opportunity {
 }
 
 model Signup {
-    id            String      @id @default(cuid())
-    opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
-    opportunityId String
-    user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-    userId        String
-    status        Status
-    createdAt     DateTime    @default(now())
+    id                  String      @id @default(cuid())
+    opportunity         Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+    opportunityId       String
+    user                User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId              String
+    status              Status
+    attendanceConfirmed Boolean     @default(false)
+    createdAt           DateTime    @default(now())
 }
 
 enum Role {
     ADMIN
     VOLUNTEER
+    ORGANIZATION
 }
 
 enum Status {
