@@ -29,6 +29,7 @@ model User {
     phone         String?       @db.VarChar(30)
     skills        String[]
     signups       Signup[]
+    messages      Message[]
     createdAt     DateTime      @default(now())
     sessions      Session[]
     opportunities Opportunity[]
@@ -48,6 +49,7 @@ model Opportunity {
     max_participants Int
     status           OpportunityStatus
     signups          Signup[]
+    messages         Message[]
     createdAt        DateTime          @default(now())
 
     @@index([userId])
@@ -62,6 +64,19 @@ model Signup {
     status              Status
     attendanceConfirmed Boolean     @default(false)
     createdAt           DateTime    @default(now())
+}
+
+model Message {
+    id            String      @id @default(cuid())
+    opportunityId String
+    opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+    senderId      String
+    sender        User        @relation(fields: [senderId], references: [id], onDelete: Cascade)
+    text          String      @db.VarChar(1000)
+    createdAt     DateTime    @default(now())
+
+    @@index([opportunityId])
+    @@index([createdAt])
 }
 
 enum Role {

@@ -1,5 +1,5 @@
 'use client'
-import { EventList } from "../_components/list"
+import { EventList } from "~/views/components/List"
 import { api } from "~/trpc/react"
 import { useState } from "react"
 import Link from "next/link"

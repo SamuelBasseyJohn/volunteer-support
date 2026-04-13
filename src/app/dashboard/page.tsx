@@ -63,6 +63,11 @@ export default function DashboardPage() {
                                             ✅ Attendance Confirmed
                                         </span>
                                     )}
+                                    {app.status === "CONFIRMED" && (
+                                        <Link href={`/event/${app.opportunityId}/chat`} className="mt-2 rounded-lg bg-blue-600 px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-blue-700">
+                                            Go to Chat
+                                        </Link>
+                                    )}
                                 </div>
                             </div>
                         </div>

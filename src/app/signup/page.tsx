@@ -17,6 +17,7 @@ export default function SignUp() {
   const [role, setRole] = useState<"VOLUNTEER" | "ORGANIZATION">("VOLUNTEER")
   const [credentials, setCredentials] = useState<{ email: string; password: string } | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const [duplicateEmail, setDuplicateEmail] = useState(false)
 
   const validate = (name: string, email: string, password: string) => {
     const errs: Record<string, string> = {}
@@ -32,7 +33,14 @@ export default function SignUp() {
         await signIn("credentials", { redirect: false, email: credentials.email, password: credentials.password })
       }
     },
-    onError: async (err) => setError(err.message)
+    onError: (err) => {
+      if (err.data?.code === "CONFLICT") {
+        setError("This account already exists. Please sign in instead.")
+        setDuplicateEmail(true)
+      } else {
+        setError(err.message ?? "Something went wrong. Please try again.")
+      }
+    }
   })
 
   useEffect(() => {
@@ -51,6 +59,7 @@ export default function SignUp() {
     const errs = validate(name, email, password)
     if (Object.keys(errs).length > 0) { setFieldErrors(errs); return }
     setFieldErrors({})
+    setDuplicateEmail(false)
     setCredentials({ email, password })
     signup.mutate({ name, email, password, role })
   }
@@ -82,7 +91,9 @@ export default function SignUp() {
             <label htmlFor={f.id} className="mb-1 block text-sm font-medium text-gray-700">{f.label}</label>
             <input
               id={f.id} name={f.id} type={f.type} placeholder={f.placeholder}
-              className={`w-full rounded-lg border p-3 outline-none focus:ring-2 focus:ring-blue-500 ${fieldErrors[f.id] ? "border-red-400" : ""}`}
+              className={`w-full rounded-lg border p-3 outline-none focus:ring-2 focus:ring-blue-500 ${
+                fieldErrors[f.id] || (f.id === "email" && duplicateEmail) ? "border-red-400" : ""
+              }`}
             />
             {fieldErrors[f.id] && <p className="mt-1 text-xs text-red-500">{fieldErrors[f.id]}</p>}
           </div>

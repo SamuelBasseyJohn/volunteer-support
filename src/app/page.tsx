@@ -1,4 +1,4 @@
-import HomePage from "./_components/homePage";
+import HomePage from "~/views/components/HomePage";
 
  async function Home() {
   return (

@@ -1,7 +1,7 @@
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import * as bcrypt from "bcrypt";
 import CredentialsProvider from "next-auth/providers/credentials"
-import { db } from "~/server/db";
+import { db } from "~/models/db";
 import { type AdapterUser } from "@auth/core/adapters";
 
 /**

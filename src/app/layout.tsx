@@ -4,8 +4,8 @@ import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 import { SessionProvider } from "next-auth/react";
 import { TRPCReactProvider } from "~/trpc/react";
-import Navbar from "./_components/navBar";
-import Footer from "./_components/footer";
+import Navbar from "~/views/components/NavBar";
+import Footer from "~/views/components/Footer";
 
 export const metadata: Metadata = {
   title: "Create T3 App",

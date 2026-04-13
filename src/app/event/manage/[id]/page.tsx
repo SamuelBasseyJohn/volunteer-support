@@ -1,4 +1,4 @@
-import EventManagement from "~/app/_components/manageEvent";
+import EventManagement from "~/views/components/ManageEvent";
 
 const Manage = async({params}: {params: Promise<{id: string}>}) => {
   const id = (await params).id

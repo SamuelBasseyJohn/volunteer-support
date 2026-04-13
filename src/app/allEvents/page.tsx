@@ -1,6 +1,6 @@
 "use client"
 import React, { useState } from 'react'
-import EventList from '../_components/eventList'
+import EventList from '~/views/components/EventList'
 import { api } from '~/trpc/react'
 
 const CATEGORIES = ["All", "Medical", "Logistics", "Education", "Environment", "Technology", "Community", "Other"]

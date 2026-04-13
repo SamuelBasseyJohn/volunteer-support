@@ -1,6 +1,6 @@
 "use client"
 import React from 'react';
-import EventList from '../_components/eventList';
+import EventList from '~/views/components/EventList';
 import { api } from '~/trpc/react';
 
 const AcceptedEventsPage: React.FC = () => {
