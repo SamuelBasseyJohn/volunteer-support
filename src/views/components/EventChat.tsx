@@ -24,7 +24,7 @@ export default function EventChat({ eventId }: { eventId: string }) {
     const sendMessage = api.message.sendMessage.useMutation({
         onSuccess: () => {
             setMessage("");
-            trpcUtils.message.getEventChat.invalidate({ eventId });
+            void trpcUtils.message.getEventChat.invalidate({ eventId });
         },
         onError: (err) => {
             alert(err.message);

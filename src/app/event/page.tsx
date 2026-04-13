@@ -1,19 +1,9 @@
 'use client'
 import { EventList } from "~/views/components/List"
 import { api } from "~/trpc/react"
-import { useState } from "react"
 import Link from "next/link"
 
-interface Event {
-    status: string,
-    id: string,
-    title: string,
-    location: string,
-    date: string
-}
-
 const Events = () => {
-    const [events, setEvents] = useState<Event[]>([])
     const getEvents = api.event.getMyEvents.useQuery()
     const parseDate = (date: Date) => {
         return new Date(date).toISOString().split("T")[0]; // Returns YYYY-MM-DD

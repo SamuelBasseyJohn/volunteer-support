@@ -27,7 +27,7 @@ const VolunteerChatView = ({ id }: { id: string }) => {
   if (isError || !event) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-800 to-blue-400 text-white">
-        <p className="text-xl font-semibold">Oops! We couldn't load this event chat.</p>
+        <p className="text-xl font-semibold">Oops! We couldn&apos;t load this event chat.</p>
       </div>
     );
   }

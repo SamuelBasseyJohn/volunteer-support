@@ -10,7 +10,6 @@ const AllEventsPage: React.FC = () => {
     const [category, setCategory] = useState("")
     const [dateFrom, setDateFrom] = useState("")
     const [dateTo, setDateTo] = useState("")
-    const [applied, setApplied] = useState(false)
 
     const events = api.event.getAllEvents.useQuery({
         search: search || undefined,

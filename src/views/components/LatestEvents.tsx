@@ -6,7 +6,6 @@
  * Used on the authenticated home page.
  */
 import { api } from "~/trpc/react";
-import type { Event } from "~/views/components/EventList";
 import EventList from "~/views/components/EventList";
 
 export const LatestEvents = () => {

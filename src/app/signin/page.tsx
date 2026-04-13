@@ -8,7 +8,7 @@ import { useSession } from "next-auth/react";
 export default function SignIn() {
   const router = useRouter()
   const [formState, formAction] = useActionState(loginAction, null);
-  const { data: session, update } = useSession()
+  const { update } = useSession()
 
   useEffect(() => {
     if (formState?.success) {
@@ -19,7 +19,7 @@ export default function SignIn() {
         else router.push("/dashboard")
       }).catch(() => router.push("/dashboard"))
     }
-  }, [formState, router])
+  }, [formState, router, update])
 
 
   return (
